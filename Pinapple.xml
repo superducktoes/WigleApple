@@ -1,0 +1,113 @@
+<dashboard>
+  <label>Pineapple</label>
+  <row>
+    <panel>
+      <title>WiFi Probe Map</title>
+      <viz type="leaflet_maps_app.leaflet_maps">
+        <search>
+          <query>host="wifi-probes" index="pineapple" sourcetype="_json" totalResults &lt; 250
+| rename "results{}.trilat" as latitude, "results{}.trilong" as longitude, results{}.ssid as tooltip
+| eval description=mvappend(latitude, longitude, totalResults)
+| nomv description
+| table latitude, longitude, tooltip, description
+| where longitude != ""</query>
+          <earliest>0</earliest>
+          <latest></latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </viz>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Unassociated Client Vendors</title>
+      <table>
+        <search>
+          <query>host="unassociated-clients" index="pineapple" sourcetype="_json" mac_vendor != None 
+| stats count by mac_vendor 
+| rename mac_vendor as vendor
+| sort - count</query>
+          <earliest>0</earliest>
+          <latest></latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>Scan Results Client Vendors</title>
+      <table>
+        <search>
+          <query>source="Scan_Results_1.json" host="scan-results" index="pineapple" sourcetype="_json" clients{}.mac_vendor != "None" 
+|  stats count by clients{}.mac_vendor 
+| rename clients{}.mac_vendor as Vendor
+| sort - count</query>
+          <earliest>0</earliest>
+          <latest></latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>BSSID Vendors</title>
+      <table>
+        <search>
+          <query>host="scan-results" index="pineapple" sourcetype="_json" bssid_vendor != "None" 
+|  stats count by bssid_vendor 
+| rename bssid_vendor as Vendor
+| sort - count</query>
+          <earliest>0</earliest>
+          <latest></latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Previously Seen Unassociated Clients</title>
+      <single>
+        <search>
+          <query>host="unassociated-clients" index="pineapple" sourcetype="_json" mac_vendor != None 
+|  stats count by bssid 
+|  where count &gt; 1
+| stats count(count)</query>
+          <earliest>0</earliest>
+          <latest></latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="rangeColors">["0x53a051","0x0877a6","0xf8be34","0xf1813f","0xdc4e41"]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+  </row>
+</dashboard>

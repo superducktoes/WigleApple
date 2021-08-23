@@ -1,0 +1,121 @@
+<form>
+  <label>SSID Search</label>
+  <fieldset submitButton="false">
+    <input type="dropdown" token="ssid">
+      <label>SSID Name</label>
+      <fieldForLabel>ssid</fieldForLabel>
+      <fieldForValue>ssid</fieldForValue>
+      <search>
+        <query>host="wifi-history" index="pineapple" sourcetype="_json" 
+| dedup ssid
+| table ssid</query>
+        <earliest>0</earliest>
+        <latest></latest>
+      </search>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>SSID Locations</title>
+      <viz type="leaflet_maps_app.leaflet_maps">
+        <search>
+          <query>host="wifi-history" index="pineapple" sourcetype="_json" 
+| rename trilat as latitude, trilong as longitude, road as tooltip
+| where ssid = "$ssid$" 
+| table latitude, longitude, tooltip</query>
+          <earliest>0</earliest>
+          <latest></latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="leaflet_maps_app.leaflet_maps.allPopups">0</option>
+        <option name="leaflet_maps_app.leaflet_maps.animate">1</option>
+        <option name="leaflet_maps_app.leaflet_maps.autoFitAndZoom">1</option>
+        <option name="leaflet_maps_app.leaflet_maps.autoFitAndZoomDelay">500</option>
+        <option name="leaflet_maps_app.leaflet_maps.bingMaps">0</option>
+        <option name="leaflet_maps_app.leaflet_maps.bingMapsLabelLanguage">en-US</option>
+        <option name="leaflet_maps_app.leaflet_maps.bingMapsTileLayer">CanvasLight</option>
+        <option name="leaflet_maps_app.leaflet_maps.cluster">1</option>
+        <option name="leaflet_maps_app.leaflet_maps.contextMenu">1</option>
+        <option name="leaflet_maps_app.leaflet_maps.criticalThreshold">80</option>
+        <option name="leaflet_maps_app.leaflet_maps.defaultHeight">600</option>
+        <option name="leaflet_maps_app.leaflet_maps.drilldown">1</option>
+        <option name="leaflet_maps_app.leaflet_maps.fullScreen">0</option>
+        <option name="leaflet_maps_app.leaflet_maps.googlePlacesPosition">topleft</option>
+        <option name="leaflet_maps_app.leaflet_maps.googlePlacesSearch">0</option>
+        <option name="leaflet_maps_app.leaflet_maps.googlePlacesZoomLevel">12</option>
+        <option name="leaflet_maps_app.leaflet_maps.layerControl">1</option>
+        <option name="leaflet_maps_app.leaflet_maps.layerControlCollapsed">1</option>
+        <option name="leaflet_maps_app.leaflet_maps.mapCenterLat">39.50</option>
+        <option name="leaflet_maps_app.leaflet_maps.mapCenterLon">-98.35</option>
+        <option name="leaflet_maps_app.leaflet_maps.mapCenterZoom">6</option>
+        <option name="leaflet_maps_app.leaflet_maps.mapTile">http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png</option>
+        <option name="leaflet_maps_app.leaflet_maps.maxClusterRadius">80</option>
+        <option name="leaflet_maps_app.leaflet_maps.maxSpiderfySize">100</option>
+        <option name="leaflet_maps_app.leaflet_maps.maxZoom">19</option>
+        <option name="leaflet_maps_app.leaflet_maps.measureActiveColor">#00ff00</option>
+        <option name="leaflet_maps_app.leaflet_maps.measureCompletedColor">#0066ff</option>
+        <option name="leaflet_maps_app.leaflet_maps.measureIconPosition">topright</option>
+        <option name="leaflet_maps_app.leaflet_maps.measureLocalization">en</option>
+        <option name="leaflet_maps_app.leaflet_maps.measurePrimaryAreaUnit">acres</option>
+        <option name="leaflet_maps_app.leaflet_maps.measurePrimaryLengthUnit">feet</option>
+        <option name="leaflet_maps_app.leaflet_maps.measureSecondaryAreaUnit">sqmiles</option>
+        <option name="leaflet_maps_app.leaflet_maps.measureSecondaryLengthUnit">miles</option>
+        <option name="leaflet_maps_app.leaflet_maps.measureTool">1</option>
+        <option name="leaflet_maps_app.leaflet_maps.minZoom">1</option>
+        <option name="leaflet_maps_app.leaflet_maps.multiplePopups">0</option>
+        <option name="leaflet_maps_app.leaflet_maps.pathColorList">#0003F0,#D43C29,darkgreen,0xe2d400,darkred,#23A378</option>
+        <option name="leaflet_maps_app.leaflet_maps.permanentTooltip">0</option>
+        <option name="leaflet_maps_app.leaflet_maps.rangeOneBgColor">#B5E28C</option>
+        <option name="leaflet_maps_app.leaflet_maps.rangeOneFgColor">#6ECC39</option>
+        <option name="leaflet_maps_app.leaflet_maps.rangeThreeBgColor">#FD9C73</option>
+        <option name="leaflet_maps_app.leaflet_maps.rangeThreeFgColor">#F18017</option>
+        <option name="leaflet_maps_app.leaflet_maps.rangeTwoBgColor">#F1D357</option>
+        <option name="leaflet_maps_app.leaflet_maps.rangeTwoFgColor">#F0C20C</option>
+        <option name="leaflet_maps_app.leaflet_maps.refreshInterval">0</option>
+        <option name="leaflet_maps_app.leaflet_maps.scrollWheelZoom">1</option>
+        <option name="leaflet_maps_app.leaflet_maps.showPathLines">0</option>
+        <option name="leaflet_maps_app.leaflet_maps.singleMarkerMode">0</option>
+        <option name="leaflet_maps_app.leaflet_maps.spiderfyDistanceMultiplier">1</option>
+        <option name="leaflet_maps_app.leaflet_maps.stickyTooltip">1</option>
+        <option name="leaflet_maps_app.leaflet_maps.warningThreshold">55</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </viz>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Number Found</title>
+      <single>
+        <search>
+          <query>host="wifi-history" index="pineapple" sourcetype="_json" 
+|  where ssid = "$ssid$" 
+| stats count(ssid)</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="colorBy">value</option>
+        <option name="colorMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0x53a051","0x0877a6","0xf8be34","0xf1813f","0xdc4e41"]</option>
+        <option name="rangeValues">[0,30,70,100]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="showSparkline">1</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <option name="trendColorInterpretation">standard</option>
+        <option name="trendDisplayMode">absolute</option>
+        <option name="unitPosition">after</option>
+        <option name="useColors">0</option>
+        <option name="useThousandSeparators">1</option>
+      </single>
+    </panel>
+  </row>
+</form>

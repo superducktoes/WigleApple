@@ -67,15 +67,15 @@ class WifiPineapple:
 
         r = requests.post(pineapple_ip, data=json.dumps(getUnassociatedClientsJson), verify=False)
         response = json.loads(r.text[5:])
-        response = response["results"]["ap_list"]
+        response = response["results"]["unassociated_clients"]
         
         for i in response:
             try:
-                mac_vendor = MacLookup().lookup(i["bssid"])
+                mac_vendor = MacLookup().lookup(i["mac"])
             except:
                 mac_vendor = "None"
 
-            i["bssid_vendor"] = mac_vendor
+            i["mac_vendor"] = mac_vendor
         
         print(response)
         
@@ -153,7 +153,7 @@ class WigleAPI:
         
         wigle_results = []
     
-        for i in response:
+        for i in ssids:
             headers = {
                 'accept': 'application/json',
                 }

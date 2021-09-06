@@ -168,14 +168,28 @@ class WigleAPI:
             
             response = requests.get('https://api.wigle.net/api/v2/network/search', headers=headers, params=params, auth=(wigle_api_name,wigle_api_token)).json()
             print(response)
-            wigle_results.append(json.dumps(response))
-            
+            if(response["success"] == True):
+                wigle_results.append(response)
+
+            # if there are results from wigle delete them from the pineap pool so they don't get searched again
+            if(response["success"] == True):
+                print("deleting {}".format(i))
+
+                deleteSsidFromPoolJson = {
+                    "module":"PineAP",
+                    "action":"removeSSID",
+                    "ssid": i
+                    }
+
+                deleteSSIDFromPool = requests.post(pineapple_ip, data=json.dumps(deleteSsidFromPoolJson), verify=False)
+                print("delete status: {}".format(str(deleteSSIDFromPool.status()))
+
         print(wigle_results)
         
         # get the current time in seconds and add it to the file name
         fileName = "./results/Wigle_Results_{}.json".format(str(int(round(time.time() * 1000))))
         with open(fileName, 'w') as outfile:
-            json.dump(response, outfile)
+            json.dump(wigle_results, outfile)
 
 
         # now that we have it saved, clear out the ssid pool

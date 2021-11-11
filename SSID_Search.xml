@@ -1,84 +1,30 @@
 <form>
-  <label>SSID Search</label>
+  <label>Pineapple</label>
   <fieldset submitButton="false">
-    <input type="dropdown" token="ssid">
-      <label>SSID Name</label>
-      <fieldForLabel>ssid</fieldForLabel>
-      <fieldForValue>ssid</fieldForValue>
-      <search>
-        <query>host="wifi-history" index="pineapple" sourcetype="_json" 
-| dedup ssid
-| table ssid</query>
-        <earliest>0</earliest>
-        <latest></latest>
-      </search>
+    <input type="time" token="field1">
+      <label></label>
+      <default>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </default>
     </input>
   </fieldset>
   <row>
     <panel>
-      <title>SSID Locations</title>
+      <title>WiFi Probe Map</title>
       <viz type="leaflet_maps_app.leaflet_maps">
         <search>
-          <query>host="wifi-history" index="pineapple" sourcetype="_json" 
-| rename trilat as latitude, trilong as longitude, road as tooltip
-| where ssid = "$ssid$" 
-| table latitude, longitude, tooltip</query>
-          <earliest>0</earliest>
-          <latest></latest>
+          <query>source="Wigle_Results_*" index="pineapple" sourcetype="_json" totalResults &lt; 250
+| rename "results{}.trilat" as latitude, "results{}.trilong" as longitude, results{}.ssid as tooltip
+| eval description=mvappend(latitude, longitude, totalResults)
+| nomv description
+| table latitude, longitude, tooltip, description
+| where longitude != ""</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
           <sampleRatio>1</sampleRatio>
         </search>
-        <option name="drilldown">none</option>
-        <option name="leaflet_maps_app.leaflet_maps.allPopups">0</option>
-        <option name="leaflet_maps_app.leaflet_maps.animate">1</option>
-        <option name="leaflet_maps_app.leaflet_maps.autoFitAndZoom">1</option>
-        <option name="leaflet_maps_app.leaflet_maps.autoFitAndZoomDelay">500</option>
-        <option name="leaflet_maps_app.leaflet_maps.bingMaps">0</option>
-        <option name="leaflet_maps_app.leaflet_maps.bingMapsLabelLanguage">en-US</option>
-        <option name="leaflet_maps_app.leaflet_maps.bingMapsTileLayer">CanvasLight</option>
-        <option name="leaflet_maps_app.leaflet_maps.cluster">1</option>
-        <option name="leaflet_maps_app.leaflet_maps.contextMenu">1</option>
-        <option name="leaflet_maps_app.leaflet_maps.criticalThreshold">80</option>
-        <option name="leaflet_maps_app.leaflet_maps.defaultHeight">600</option>
-        <option name="leaflet_maps_app.leaflet_maps.drilldown">1</option>
-        <option name="leaflet_maps_app.leaflet_maps.fullScreen">0</option>
-        <option name="leaflet_maps_app.leaflet_maps.googlePlacesPosition">topleft</option>
-        <option name="leaflet_maps_app.leaflet_maps.googlePlacesSearch">0</option>
-        <option name="leaflet_maps_app.leaflet_maps.googlePlacesZoomLevel">12</option>
-        <option name="leaflet_maps_app.leaflet_maps.layerControl">1</option>
-        <option name="leaflet_maps_app.leaflet_maps.layerControlCollapsed">1</option>
-        <option name="leaflet_maps_app.leaflet_maps.mapCenterLat">39.50</option>
-        <option name="leaflet_maps_app.leaflet_maps.mapCenterLon">-98.35</option>
-        <option name="leaflet_maps_app.leaflet_maps.mapCenterZoom">6</option>
-        <option name="leaflet_maps_app.leaflet_maps.mapTile">http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png</option>
-        <option name="leaflet_maps_app.leaflet_maps.maxClusterRadius">80</option>
-        <option name="leaflet_maps_app.leaflet_maps.maxSpiderfySize">100</option>
-        <option name="leaflet_maps_app.leaflet_maps.maxZoom">19</option>
-        <option name="leaflet_maps_app.leaflet_maps.measureActiveColor">#00ff00</option>
-        <option name="leaflet_maps_app.leaflet_maps.measureCompletedColor">#0066ff</option>
-        <option name="leaflet_maps_app.leaflet_maps.measureIconPosition">topright</option>
-        <option name="leaflet_maps_app.leaflet_maps.measureLocalization">en</option>
-        <option name="leaflet_maps_app.leaflet_maps.measurePrimaryAreaUnit">acres</option>
-        <option name="leaflet_maps_app.leaflet_maps.measurePrimaryLengthUnit">feet</option>
-        <option name="leaflet_maps_app.leaflet_maps.measureSecondaryAreaUnit">sqmiles</option>
-        <option name="leaflet_maps_app.leaflet_maps.measureSecondaryLengthUnit">miles</option>
-        <option name="leaflet_maps_app.leaflet_maps.measureTool">1</option>
-        <option name="leaflet_maps_app.leaflet_maps.minZoom">1</option>
-        <option name="leaflet_maps_app.leaflet_maps.multiplePopups">0</option>
-        <option name="leaflet_maps_app.leaflet_maps.pathColorList">#0003F0,#D43C29,darkgreen,0xe2d400,darkred,#23A378</option>
-        <option name="leaflet_maps_app.leaflet_maps.permanentTooltip">0</option>
-        <option name="leaflet_maps_app.leaflet_maps.rangeOneBgColor">#B5E28C</option>
-        <option name="leaflet_maps_app.leaflet_maps.rangeOneFgColor">#6ECC39</option>
-        <option name="leaflet_maps_app.leaflet_maps.rangeThreeBgColor">#FD9C73</option>
-        <option name="leaflet_maps_app.leaflet_maps.rangeThreeFgColor">#F18017</option>
-        <option name="leaflet_maps_app.leaflet_maps.rangeTwoBgColor">#F1D357</option>
-        <option name="leaflet_maps_app.leaflet_maps.rangeTwoFgColor">#F0C20C</option>
-        <option name="leaflet_maps_app.leaflet_maps.refreshInterval">0</option>
-        <option name="leaflet_maps_app.leaflet_maps.scrollWheelZoom">1</option>
-        <option name="leaflet_maps_app.leaflet_maps.showPathLines">0</option>
-        <option name="leaflet_maps_app.leaflet_maps.singleMarkerMode">0</option>
-        <option name="leaflet_maps_app.leaflet_maps.spiderfyDistanceMultiplier">1</option>
-        <option name="leaflet_maps_app.leaflet_maps.stickyTooltip">1</option>
-        <option name="leaflet_maps_app.leaflet_maps.warningThreshold">55</option>
+        <option name="drilldown">all</option>
         <option name="refresh.display">progressbar</option>
         <option name="trellis.enabled">0</option>
         <option name="trellis.scales.shared">1</option>
@@ -88,34 +34,226 @@
   </row>
   <row>
     <panel>
-      <title>Number Found</title>
-      <single>
+      <title>Unassociated Client Vendors</title>
+      <table>
         <search>
-          <query>host="wifi-history" index="pineapple" sourcetype="_json" 
-|  where ssid = "$ssid$" 
-| stats count(ssid)</query>
-          <earliest>-24h@h</earliest>
-          <latest>now</latest>
+          <query>host="unassociated-clients" index="pineapple" sourcetype="_json" mac_vendor != None 
+| stats count by mac_vendor 
+| rename mac_vendor as vendor
+| sort - count</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
           <sampleRatio>1</sampleRatio>
         </search>
-        <option name="colorBy">value</option>
-        <option name="colorMode">none</option>
-        <option name="drilldown">none</option>
-        <option name="numberPrecision">0</option>
-        <option name="rangeColors">["0x53a051","0x0877a6","0xf8be34","0xf1813f","0xdc4e41"]</option>
-        <option name="rangeValues">[0,30,70,100]</option>
+        <option name="count">15</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
         <option name="refresh.display">progressbar</option>
-        <option name="showSparkline">1</option>
-        <option name="showTrendIndicator">1</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>Scan Results Client Vendors</title>
+      <table>
+        <search>
+          <query>host="scan-results" index="pineapple" sourcetype="_json" clients{}.mac_vendor != "None" 
+|  stats count by clients{}.mac_vendor 
+| rename clients{}.mac_vendor as Vendor
+| sort - count</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">15</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>BSSID Vendors</title>
+      <table>
+        <search>
+          <query>host="scan-results" index="pineapple" sourcetype="_json" bssid_vendor != "None" 
+| dedup bssid
+| stats count by bssid_vendor
+| rename bssid_vendor as Vendor
+| sort - count</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">15</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Unassociated Clients Seen Multiple Times</title>
+      <single>
+        <search>
+          <query>host="unassociated-clients" index="pineapple" sourcetype="_json" mac_vendor != None 
+|  stats count by mac 
+|  where count &gt; 1
+| stats count</query>
+          <earliest>0</earliest>
+          <latest></latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="rangeColors">["0x53a051","0x0877a6","0xf8be34","0xf1813f","0xdc4e41"]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Open Wireless Networks</title>
+      <table>
+        <search>
+          <query>index=pineapple host=scan-results encryption=Open
+| convert timeformat="%m/%d/%Y" ctime(lastSeen) AS date
+| dedup ssid
+| stats count by ssid, date, bssid, lastSeen
+| sort - count, lastSeen</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>Encrypted Networks</title>
+      <table>
+        <search>
+          <query>index=pineapple host=scan-results encryption!=Open
+| convert timeformat="%m/%d/%Y" ctime(lastSeen) AS date
+| stats count by ssid, encryption, date
+| sort - count, lastSeen</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>WiFi Channels</title>
+      <chart>
+        <search>
+          <query>index=pineapple channel=* 
+|  stats count by channel</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
         <option name="trellis.enabled">0</option>
         <option name="trellis.scales.shared">1</option>
         <option name="trellis.size">medium</option>
-        <option name="trendColorInterpretation">standard</option>
-        <option name="trendDisplayMode">absolute</option>
-        <option name="unitPosition">after</option>
-        <option name="useColors">0</option>
-        <option name="useThousandSeparators">1</option>
-      </single>
+      </chart>
+    </panel>
+    <panel>
+      <title>Encryption Types</title>
+      <chart>
+        <search>
+          <query>index=pineapple host=scan-results
+| stats count by encryption</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
     </panel>
   </row>
 </form>

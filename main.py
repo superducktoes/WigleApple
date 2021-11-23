@@ -184,6 +184,8 @@ class WigleAPI:
                 line = next(file).strip("\n")
                 ssids.append(line)
 
+        file.close()
+
         print(ssids)
         print(len(ssids))
 
@@ -205,6 +207,9 @@ class WigleAPI:
             print(response)
 
             if(response["success"] == True):
+                # always append the ssid name since if there aren't any results we lose it
+                # and apprently I've lost some data along the way
+                response["ssid_name"] = i
                 wigle_results.append(response)
             else:
                 print(i)

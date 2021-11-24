@@ -1,18 +1,27 @@
-<dashboard>
+<form>
   <label>Pineapple</label>
+  <fieldset submitButton="false">
+    <input type="time" token="field1">
+      <label></label>
+      <default>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+  </fieldset>
   <row>
     <panel>
       <title>WiFi Probe Map</title>
       <viz type="leaflet_maps_app.leaflet_maps">
         <search>
-          <query>host="wifi-probes" index="pineapple" sourcetype="_json" totalResults &lt; 250
+          <query>host="wifi-probes"   index="pineapple" sourcetype="_json" 
 | rename "results{}.trilat" as latitude, "results{}.trilong" as longitude, results{}.ssid as tooltip
 | eval description=mvappend(latitude, longitude, totalResults)
 | nomv description
 | table latitude, longitude, tooltip, description
 | where longitude != ""</query>
-          <earliest>0</earliest>
-          <latest></latest>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
           <sampleRatio>1</sampleRatio>
         </search>
         <option name="drilldown">all</option>
@@ -29,11 +38,139 @@
       <table>
         <search>
           <query>host="unassociated-clients" index="pineapple" sourcetype="_json" mac_vendor != None 
+| dedup mac
 | stats count by mac_vendor 
 | rename mac_vendor as vendor
 | sort - count</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">15</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>Scan Results Client Vendors</title>
+      <table>
+        <search>
+          <query>host="scan-results" index="pineapple" sourcetype="_json" clients{}.mac_vendor != "None" 
+|  stats count by clients{}.mac_vendor 
+| rename clients{}.mac_vendor as Vendor
+| sort - count</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">15</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>BSSID Vendors</title>
+      <table>
+        <search>
+          <query>host="scan-results" index="pineapple" sourcetype="_json" bssid_vendor != "None" 
+| dedup bssid
+| stats count by bssid_vendor
+| rename bssid_vendor as Vendor
+| sort - count</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">15</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Unassociated Clients Seen Multiple Times</title>
+      <single>
+        <search>
+          <query>host="unassociated-clients" index="pineapple" sourcetype="_json" mac_vendor != None 
+| bucket _time span=1hr
+| dedup mac,_time
+| stats count(_time) by mac
+| rename count(_time) as time
+| where time &gt; 1
+| stats count</query>
           <earliest>0</earliest>
           <latest></latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="rangeColors">["0x53a051","0x0877a6","0xf8be34","0xf1813f","0xdc4e41"]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="useColors">1</option>
+        <drilldown>
+          <link target="_blank">search?q=host%3D%22unassociated-clients%22%20index%3D%22pineapple%22%20sourcetype%3D%22_json%22%20mac_vendor%20!%3D%20None%20%0A%7C%20bucket%20_time%20span%3D1hr%0A%7C%20dedup%20mac%2C_time%0A%7C%20stats%20count(_time)%20by%20mac%0A%7C%20rename%20count(_time)%20as%20time%0A%7C%20where%20time%20%3E%201&amp;earliest=0&amp;latest=</link>
+        </drilldown>
+      </single>
+    </panel>
+    <panel>
+      <title>Percent Unidentified</title>
+      <single>
+        <search>
+          <query>index=pineapple
+| eval vendor = mvappend(bssid_vendor, mac_vendor)
+| stats count by vendor
+| eventstats sum(count) as perc | eval perc=round(count*100/perc,2)
+| table perc
+| sort - perc</query>
+          <earliest>0</earliest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="colorBy">value</option>
+        <option name="colorMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="numberPrecision">0.00</option>
+        <option name="rangeColors">["0x53a051","0x0877a6","0xf8be34","0xf1813f","0xdc4e41"]</option>
+        <option name="rangeValues">[0,30,70,100]</option>
+        <option name="showSparkline">1</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <option name="trendColorInterpretation">standard</option>
+        <option name="trendDisplayMode">absolute</option>
+        <option name="unitPosition">after</option>
+        <option name="useColors">0</option>
+        <option name="useThousandSeparators">1</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Open Wireless Networks</title>
+      <table>
+        <search>
+          <query>index=pineapple host=scan-results encryption=Open
+| convert timeformat="%m/%d/%Y" ctime(lastSeen) AS date
+| dedup ssid
+| stats count by ssid, date, bssid, lastSeen
+| sort - count, lastSeen</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
           <sampleRatio>1</sampleRatio>
         </search>
         <option name="count">10</option>
@@ -47,43 +184,21 @@
       </table>
     </panel>
     <panel>
-      <title>Scan Results Client Vendors</title>
+      <title>Encrypted Networks</title>
       <table>
         <search>
-          <query>source="Scan_Results_1.json" host="scan-results" index="pineapple" sourcetype="_json" clients{}.mac_vendor != "None" 
-|  stats count by clients{}.mac_vendor 
-| rename clients{}.mac_vendor as Vendor
-| sort - count</query>
-          <earliest>0</earliest>
-          <latest></latest>
+          <query>index=pineapple host=scan-results encryption!=Open
+| convert timeformat="%m/%d/%Y" ctime(lastSeen) AS date
+| stats count by ssid, encryption, date
+| sort - count, lastSeen</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
           <sampleRatio>1</sampleRatio>
         </search>
-        <option name="count">20</option>
+        <option name="count">10</option>
         <option name="dataOverlayMode">none</option>
         <option name="drilldown">none</option>
         <option name="percentagesRow">false</option>
-        <option name="rowNumbers">false</option>
-        <option name="totalsRow">false</option>
-        <option name="wrap">true</option>
-      </table>
-    </panel>
-    <panel>
-      <title>BSSID Vendors</title>
-      <table>
-        <search>
-          <query>host="scan-results" index="pineapple" sourcetype="_json" bssid_vendor != "None" 
-|  stats count by bssid_vendor 
-| rename bssid_vendor as Vendor
-| sort - count</query>
-          <earliest>0</earliest>
-          <latest></latest>
-          <sampleRatio>1</sampleRatio>
-        </search>
-        <option name="count">20</option>
-        <option name="dataOverlayMode">none</option>
-        <option name="drilldown">none</option>
-        <option name="percentagesRow">false</option>
-        <option name="refresh.display">progressbar</option>
         <option name="rowNumbers">false</option>
         <option name="totalsRow">false</option>
         <option name="wrap">true</option>
@@ -92,22 +207,186 @@
   </row>
   <row>
     <panel>
-      <title>Previously Seen Unassociated Clients</title>
-      <single>
+      <title>WiFi Channels</title>
+      <chart>
         <search>
-          <query>host="unassociated-clients" index="pineapple" sourcetype="_json" mac_vendor != None 
-|  stats count by bssid 
-|  where count &gt; 1
-| stats count(count)</query>
-          <earliest>0</earliest>
-          <latest></latest>
+          <query>index=pineapple channel=* 
+|  stats count by channel</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
           <sampleRatio>1</sampleRatio>
         </search>
-        <option name="drilldown">none</option>
-        <option name="rangeColors">["0x53a051","0x0877a6","0xf8be34","0xf1813f","0xdc4e41"]</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>Encryption Types</title>
+      <chart>
+        <search>
+          <query>index=pineapple host=scan-results
+| stats count by encryption</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
         <option name="refresh.display">progressbar</option>
-        <option name="useColors">1</option>
-      </single>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>Top Devices</title>
+      <chart>
+        <search>
+          <query>index=pineapple 
+| eval output = mvappend(bssid_vendor, mac_vendor)
+| search output!=None
+| stats count by output
+| sort - count</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.024</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
     </panel>
   </row>
-</dashboard>
+  <row>
+    <panel>
+      <title>Uncommon Devices</title>
+      <table>
+        <search>
+          <query>index=pineapple 
+| eval output = mvappend(bssid_vendor, mac_vendor)
+| search output!=None
+| stats count by output
+| rename output as Vendor
+| where count = 1</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>Devices By Type</title>
+      <table>
+        <search>
+          <query>index=pineapple | eval vendor = mvappend(bssid_vendor, mac_vendor) 
+| where vendor != "None"
+| lookup device_tagging.csv vendor OUTPUT type 
+| eval c_time=strftime(lastSeen,"%m/%d/%y %H:%M:%S")
+| where type != ""
+| table type, vendor, c_time</query>
+          <earliest>0</earliest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+</form>

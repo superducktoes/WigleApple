@@ -1,0 +1,5 @@
+ip link set wlan2 down
+ifconfig wlan2 promisc
+ip link set wlan2 up
+ifconfig wlan2 essid "WIFI NAME"
+tcpdump -i wlan2 
